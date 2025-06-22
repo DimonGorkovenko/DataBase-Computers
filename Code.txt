@@ -1,0 +1,427 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SQLite;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace Лаба4САПЭВСпопытка2
+{
+    internal class Program
+    {
+        static SQLiteConnection connection;
+        static SQLiteCommand command;
+
+        static public bool Connect(string fileName)
+        {
+            try
+            {
+                connection = new SQLiteConnection("Data Source=" + fileName + ";Version=3; FailIfMissing=False");
+                connection.Open();
+                return true;
+            }
+            catch (SQLiteException ex)
+            {
+                Console.WriteLine($"Ошибка доступа к базе данных. Исключение: {ex.Message}");
+                return false;
+            }
+        }
+
+        static void Main(string[] args)
+        {
+            if (Connect("DB.sqlite"))
+            {
+                while (true)
+                {
+                    Console.WriteLine("МЕНЮ:");
+                    Console.WriteLine("0: добавить запись о ПК");
+                    Console.WriteLine("1: найти ПК по диапазону цен");
+                    Console.WriteLine("2: создать таблицу-пустышку");
+                    Console.WriteLine("3: создать таблицу с отображением объёма оперативки в ценовом диапазоне");
+                    Console.WriteLine("4: отобрать все ПК, производимые выбранной организацией");
+                    Console.WriteLine("5: группировка");
+                    Console.WriteLine("6: уменьшить цену всех ПК, с видеокартами выбранной памяти, на 10%");
+                    Console.WriteLine("7: добавить/удалить мышь");
+                    Console.WriteLine("8: отобрать через transform ПК");
+                    Console.WriteLine("");
+
+                    int key = -1;
+                    key = Convert.ToInt32(Console.ReadLine());
+
+                    Console.Clear();
+
+                    switch (key)
+                    {
+                        case 0:
+                            try
+                            {
+                                command = new SQLiteCommand(connection)
+                                {
+                                    CommandText = "INSERT INTO [Персональные компьютеры] (ID, Модель, Назначение, [Вариант комплектации], Цена) VALUES (null, " +
+                            ":МодельПК, :НазначениеПК, :ВариантКомплекцииПК, :ЦенаПК)"
+                                };
+                                command.Parameters.AddWithValue("МодельПК", "Macbook Pro 2077 Gaming");
+                                command.Parameters.AddWithValue("НазначениеПК", "Игровой");
+                                command.Parameters.AddWithValue("ВариантКомплекцииПК", "666");
+                                command.Parameters.AddWithValue("ЦенаПК", "549999");
+                                command.ExecuteNonQuery();
+                                command = new SQLiteCommand(connection)
+                                {
+                                    CommandText = "INSERT INTO [Организации] (ID, Модель, Производитель, Продавец, [Поставщик доп. комплектующих]) VALUES (null, " +
+                                    ":МодельПК, :ПроизводительПК, :ПродавецПК, :ПоставщикДопКомплектующихПК)"
+                                };
+                                command.Parameters.AddWithValue("МодельПК", "Macbook Pro 2077 Gaming");
+                                command.Parameters.AddWithValue("ПроизводительПК", "Apple inc.");
+                                command.Parameters.AddWithValue("ПродавецПК", "Магазин \"Заурон\"");
+                                command.Parameters.AddWithValue("ПоставщикДопКомплектующихПК", "ЧУП Элита inc.");
+                                command.ExecuteNonQuery();
+                                command = new SQLiteCommand(connection)
+                                {
+                                    CommandText = "INSERT INTO [Комплектация] (ID, [Вариант комплектации], [Процессор], [Оперативная память], [Жесткий диск],[Видеокарта],[Монитор],[Сетевая карта],[Мультимедийные колонки],[Звуковая карта],[DVD-RW-привод],[Мышь]) VALUES (null, " +
+                                    ":ВариантКомплектации, :Процессор, :ОперативнаяПамять, :ЖесткийДиск, :Видеокарта, :Монитор, :СетеваяКарта, :МультимедийныеКолонки, :ЗвуковаяКарта, :DVDRWПривод, :Мышь)"
+                                };
+                                command.Parameters.AddWithValue("ВариантКомплектации", "666");
+                                command.Parameters.AddWithValue("Процессор", "Intel Core I11");
+                                command.Parameters.AddWithValue("ОперативнаяПамять", "Flex 89-SSS 128 GB");
+                                command.Parameters.AddWithValue("ЖесткийДиск", "SuperHardDisk 267.65_9GA");
+                                command.Parameters.AddWithValue("Видеокарта", "GoldenVideo Pro");
+                                command.Parameters.AddWithValue("Монитор", "Apple Vision Pro X Gold");
+                                command.Parameters.AddWithValue("СетеваяКарта", "Orange 23M Gold");
+                                command.Parameters.AddWithValue("МультимедийныеКолонки", "Pineapple 2.2 Gold");
+                                command.Parameters.AddWithValue("ЗвуковаяКарта", "Focusrite Gold");
+                                command.Parameters.AddWithValue("DVDRWПривод", "Petroo 13.7FD Gold");
+                                command.Parameters.AddWithValue("Мышь", "Magic mouse Gold XXX");
+                                command.ExecuteNonQuery();
+                                //command = new SQLiteCommand(connection)
+                                //{
+                                //    CommandText = "INSERT INTO [Оперативная память] (ID, Модель, [Объём, Мб], [Количество микросхем в модуле], [Тип, SDRAM или DDR]) VALUES (null, " +
+                                //    ":МодельОперативки, :ОбъёмОперативкиВМб, :КоличествоМикросхемВМодуле, :ТипSDRAMИлиDDR)"
+                                //};
+                                //command.Parameters.AddWithValue("МодельОперативки", "Flex 89-SSS 128 GB");
+                                //command.Parameters.AddWithValue("ОбъёмОперативкиВМб", 128000);
+                                //command.Parameters.AddWithValue("КоличествоМикросхемВМодуле", "64");
+                                //command.Parameters.AddWithValue("ТипSDRAMИлиDDR", "SDRAM");
+                                //command.ExecuteNonQuery();
+                                //command = new SQLiteCommand(connection)
+                                //{
+                                //    CommandText = "INSERT INTO [Мыши] (ID, Модель, [Производитель], [Тип, обычная или оптическая], [Вид, обычная или беспроводная], [Количество кнопок]) VALUES (null, " +
+                                //    ":МодельМыши, :ПроизводительМыши, :ТипМышиОбычнаяИлиОптическая, :ВидМышиОбычнаяИлиБеспроводная, :КоличествоКнопокМыши)"
+                                //};
+                                //command.Parameters.AddWithValue("МодельМыши", "Magic mouse Gold XXX");
+                                //command.Parameters.AddWithValue("ПроизводительМыши", "Apple inc.");
+                                //command.Parameters.AddWithValue("ТипМышиОбычнаяИлиОптическая", "Оптическая");
+                                //command.Parameters.AddWithValue("ВидМышиОбычнаяИлиБеспроводная", "Беспроводная");
+                                //command.Parameters.AddWithValue("КоличествоКнопокМыши", "18");
+                                //command.ExecuteNonQuery();
+
+                                Console.WriteLine("New PC was added!\n");
+                            }
+                            catch { Console.WriteLine("Ошибка!"); }
+
+                            Console.WriteLine("");
+                            break;
+                        case 1:
+                            try
+                            {
+                                Console.WriteLine("Enter [min max] значения столбца \"Цена\"");
+                                String min_max = Console.ReadLine();
+                                String[] parts = min_max.Split(' ');
+                                String min = parts[0];
+                                String max = parts[1];
+
+                                command = new SQLiteCommand(connection);
+                                command.CommandText = "SELECT * FROM [Персональные компьютеры] WHERE [Цена] BETWEEN " + min + " AND " + max;
+                                DataTable data = new DataTable();
+                                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+                                adapter.Fill(data);
+
+                                Console.Clear();
+                                Console.WriteLine("Отображение ПК с ценами в диапазоне [" + min + "; " + max + "]:");
+
+                                String load_value = "";
+                                Console.WriteLine("----------");
+                                for (int i = 0; i < data.Rows.Count; i++)
+                                {
+                                    load_value = Convert.ToString(data.Rows[i]["ID"]);
+                                    Console.WriteLine("ID = " + load_value);
+                                    load_value = Convert.ToString(data.Rows[i]["Модель"]);
+                                    Console.WriteLine("Модель = " + load_value);
+                                    load_value = Convert.ToString(data.Rows[i]["Назначение"]);
+                                    Console.WriteLine("Назначение = " + load_value);
+                                    load_value = Convert.ToString(data.Rows[i]["Цена"]);
+                                    Console.WriteLine("Цена = " + load_value);
+                                    Console.WriteLine("----------");
+                                }
+                            }
+                            catch { Console.WriteLine("Ошибка!"); }
+
+                            Console.WriteLine("");
+                            break;
+                        case 2:
+                            try
+                            {
+                                command = new SQLiteCommand(connection);
+                                command.CommandText = "CREATE TABLE [Таблица] (Компьютер TEXT, Модель TEXT, Цена NUMERIC)";
+                                command.ExecuteNonQuery();
+
+                                Console.WriteLine("Таблица создана! Нажмите любую кнопку для ее удаления!");
+                                Console.ReadKey();
+                                Console.Clear();
+
+                                command = new SQLiteCommand(connection);
+                                command.CommandText = "DROP TABLE [Таблица]";
+                                command.ExecuteNonQuery();
+
+                                Console.WriteLine("Таблица удалена!");
+                            }
+                            catch { Console.WriteLine("Ошибка!"); }
+
+                            Console.WriteLine("");
+                            break;
+                        case 3:
+                            try
+                            {
+                                Console.WriteLine("Enter [min max] значения столбца \"Цена\"");
+                                String min_max = Console.ReadLine();
+                                String[] parts = min_max.Split(' ');
+                                String min = parts[0];
+                                String max = parts[1];
+                                command = new SQLiteCommand(connection);
+                                command.CommandText = "CREATE TABLE [Новая таблица] AS " +
+                                    "SELECT [Персональные компьютеры].Модель AS [Отобранные компьютеры], " +
+                                    "[Оперативная память].[Объём, Мб] AS [Объём оперативной памяти], " +
+                                    "[Персональные компьютеры].Цена AS [Цена компьютера] " +
+                                    "FROM [Персональные компьютеры] " +
+                                    "INNER JOIN [Комплектация] ON [Комплектация].[Вариант комплектации] = [Персональные компьютеры].[Вариант комплектации] " +
+                                    "INNER JOIN [Оперативная память] ON [Оперативная память].[Модель] = [Комплектация].[Оперативная память] " +
+                                    "WHERE ([Персональные компьютеры].Цена BETWEEN " + min + " AND " + max + ") " +
+                                    "AND ";
+                                command.ExecuteNonQuery();
+
+                                Console.WriteLine("Таблица создана! Нажмите любую кнопку для ее удаления!");
+                                Console.ReadKey();
+                                Console.Clear();
+
+                                command = new SQLiteCommand(connection);
+                                command.CommandText = "DROP TABLE [Новая таблица]";
+                                command.ExecuteNonQuery();
+
+                                Console.WriteLine("Таблица удалена!");
+                            }
+                            catch { Console.WriteLine("Ошибка!"); }
+
+                            Console.WriteLine("");
+                            break;
+                        case 4:
+                            try
+                            {
+                                Console.WriteLine("Enter название компании производителя: ");
+                                String name = Console.ReadLine();
+
+                                command = new SQLiteCommand(connection);
+                                command.CommandText = "SELECT [Персональные компьютеры].* FROM [Персональные компьютеры] INNER JOIN [Организации] ON [Персональные компьютеры].Модель = [Организации].Модель " +
+                                    "WHERE [Организации].Производитель = '" + name + "'";
+                                DataTable data = new DataTable();
+                                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+                                adapter.Fill(data);
+
+                                Console.Clear();
+                                Console.WriteLine("Отображение ПК, производимых организацией " + name);
+
+                                String load_value = "";
+                                Console.WriteLine("----------");
+                                for (int i = 0; i < data.Rows.Count; i++)
+                                {
+                                    load_value = Convert.ToString(data.Rows[i]["ID"]);
+                                    Console.WriteLine("ID = " + load_value);
+                                    load_value = Convert.ToString(data.Rows[i]["Модель"]);
+                                    Console.WriteLine("Модель = " + load_value);
+                                    load_value = Convert.ToString(data.Rows[i]["Назначение"]);
+                                    Console.WriteLine("Назначение = " + load_value);
+                                    load_value = Convert.ToString(data.Rows[i]["Цена"]);
+                                    Console.WriteLine("Цена = " + load_value);
+                                    Console.WriteLine("----------");
+                                }
+                            }
+                            catch { Console.WriteLine("Ошибка!"); }
+
+                            Console.WriteLine("");
+                            break;
+                        case 5:
+                            try
+                            {
+                                command = new SQLiteCommand(connection);
+                                command.CommandText = "SELECT * FROM [Персональные компьютеры] " +
+                                    "GROUP BY [Персональные компьютеры].[Вариант комплектации]";
+                                DataTable data = new DataTable();
+                                SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+                                adapter.Fill(data);
+
+                                Console.Clear();
+                                Console.WriteLine("Отображение ПК, сгруппированных по варианту комплектации:");
+
+                                String load_value = "";
+                                Console.WriteLine("----------");
+                                for (int i = 0; i < data.Rows.Count; i++)
+                                {
+                                    load_value = Convert.ToString(data.Rows[i]["Вариант комплектации"]);
+                                    Console.WriteLine("Вариант комплектации = " + load_value);
+                                    load_value = Convert.ToString(data.Rows[i]["Модель"]);
+                                    Console.WriteLine("Модель = " + load_value);
+                                    load_value = Convert.ToString(data.Rows[i]["Назначение"]);
+                                    Console.WriteLine("Назначение = " + load_value);
+                                    load_value = Convert.ToString(data.Rows[i]["Цена"]);
+                                    Console.WriteLine("Цена = " + load_value);
+                                    Console.WriteLine("----------");
+                                }
+                            }
+                            catch { Console.WriteLine("Ошибка!"); }
+
+                            Console.WriteLine("");
+                            break;
+                        case 6:
+                            try
+                            {
+                                command = new SQLiteCommand(connection);
+                                command.CommandText = @"UPDATE [Персональные компьютеры] 
+                                                    SET [Цена] = [Цена] * 0.9 
+                                                    WHERE [Вариант комплектации] IN (
+                                                        SELECT k.[Вариант комплектации] 
+                                                        FROM [Комплектация] k
+                                                        INNER JOIN [Оперативная память] op ON op.Модель = k.[Оперативная память] 
+                                                        WHERE op.[Объём, Мб] = 8000)";
+                                command.ExecuteNonQuery();
+                            }
+                            catch { Console.WriteLine("Ошибка!"); }
+                            
+                            Console.WriteLine("");
+                            break;
+                        case 7:
+                            try
+                            {
+                                bool exit = false;
+                                while (!exit)
+                                {
+                                    Console.WriteLine("МЕНЮ:");
+                                    Console.WriteLine("1: добавить мышь");
+                                    Console.WriteLine("2: удалить мышь");
+                                    Console.WriteLine("3: выход");
+                                    Console.WriteLine("");
+
+                                    int key_mouse = -1;
+                                    key_mouse = Convert.ToInt32(Console.ReadLine());
+
+                                    Console.Clear();
+
+                                    switch (key_mouse)
+                                    {
+                                        case 1:
+                                            command = new SQLiteCommand(connection);
+                                            command.CommandText = "CREATE TABLE МышьTMP AS SELECT * FROM Мыши LIMIT 0";
+                                            command.ExecuteNonQuery();
+                                            Console.WriteLine("Временная таблица создана!");
+
+                                            command = new SQLiteCommand(connection);
+                                            command.CommandText = "SELECT MAX(id) FROM Мыши";
+                                            DataTable data = new DataTable();
+                                            SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+                                            adapter.Fill(data);
+                                            Console.WriteLine("Считано максимальное айди из таблицы Мыши");
+
+                                            command = new SQLiteCommand(connection)
+                                            {
+                                                CommandText = "INSERT INTO [МышьTMP] (ID, Модель, [Производитель], [Тип, обычная или оптическая], [Вид, обычная или беспроводная], [Количество кнопок]) VALUES " +
+                                                "(:Айди, :МодельМыши, :ПроизводительМыши, :ТипМышиОбычнаяИлиОптическая, :ВидМышиОбычнаяИлиБеспроводная, :КоличествоКнопокМыши)"
+                                            };
+                                            command.Parameters.AddWithValue("Айди", Convert.ToInt32(data.Rows[0][0]) + 1);
+                                            command.Parameters.AddWithValue("МодельМыши", "test");
+                                            command.Parameters.AddWithValue("ПроизводительМыши", "gorkovenko");
+                                            command.Parameters.AddWithValue("ТипМышиОбычнаяИлиОптическая", "Тестова");
+                                            command.Parameters.AddWithValue("ВидМышиОбычнаяИлиБеспроводная", "Тестовая");
+                                            command.Parameters.AddWithValue("КоличествоКнопокМыши", "0");
+                                            command.ExecuteNonQuery();
+                                            Console.WriteLine("Добавлена запись во временную таблицу!");
+
+                                            command = new SQLiteCommand(connection);
+                                            command.CommandText = "INSERT INTO [Мыши] SELECT * FROM [МышьTMP]";
+                                            command.ExecuteNonQuery();
+                                            Console.WriteLine("Данные перекинуты в таблицу Мыши из временной!");
+
+                                            command = new SQLiteCommand(connection);
+                                            command.CommandText = "DROP TABLE [МышьTMP]";
+                                            command.ExecuteNonQuery();
+                                            Console.WriteLine("Временная таблица удалена!");
+
+                                            Console.WriteLine("");
+                                            break;
+                                        case 2:
+                                            command = new SQLiteCommand(connection);
+                                            command.CommandText = "DELETE FROM [Мыши] WHERE ID = 4";
+                                            command.ExecuteNonQuery();
+                                            Console.WriteLine("Мышь была убита!");
+
+                                            Console.WriteLine("");
+                                            break;
+                                        case 3:
+                                            exit = true;
+                                            break;
+                                        default:
+                                            Console.WriteLine("");
+                                            break;
+                                    }
+                                    Console.WriteLine("Нажмите любую кнопку для продолжения!");
+                                    Console.ReadKey();
+                                    Console.Clear();
+                                }
+                            }
+                            catch { Console.WriteLine("Ошибка!\n"); }
+                            break;
+                        case 8:
+                            try
+                            {
+                                command = new SQLiteCommand(connection);
+                                command.CommandText = @"CREATE TABLE [Отобранные ПК] AS SELECT 
+                                    [Персональные компьютеры].Модель AS [Модель ПК],
+                                    MAX(CASE WHEN [Оперативная память].[Объём, Мб] = '8000' THEN [Персональные компьютеры].Цена ELSE NULL END) AS [RAM_8],
+                                    MAX(CASE WHEN [Оперативная память].[Объём, Мб] = '16000' THEN [Персональные компьютеры].Цена ELSE NULL END) AS [RAM_16],
+                                    MAX(CASE WHEN [Оперативная память].[Объём, Мб] = '128000' THEN [Персональные компьютеры].Цена ELSE NULL END) AS [RAM_128]
+                                FROM 
+                                    [Персональные компьютеры]
+                                    INNER JOIN [Комплектация] ON [Персональные компьютеры].[Вариант комплектации] = [Комплектация].[Вариант комплектации]
+                                    INNER JOIN [Оперативная память] ON [Оперативная память].Модель = [Комплектация].[Оперативная память]
+                                WHERE 
+                                    [Персональные компьютеры].Цена < 100000 
+                                    AND [Оперативная память].[Объём, Мб] > 7000
+                                GROUP BY 
+                                    [Персональные компьютеры].Модель";
+                                command.ExecuteNonQuery();
+
+                                Console.WriteLine("Таблица создана! Нажмите любую кнопку для ее удаления!");
+                                Console.ReadKey();
+                                Console.Clear();
+
+                                command = new SQLiteCommand(connection);
+                                command.CommandText = "DROP TABLE [Отобранные ПК]";
+                                command.ExecuteNonQuery();
+
+                                Console.WriteLine("Таблица удалена!");
+                            }
+                            catch { Console.WriteLine("Ошибка!"); }
+
+                            Console.WriteLine("");
+                            break;
+                        default:
+                            Console.WriteLine("");
+                            break;
+                    }
+                    Console.WriteLine("Нажмите любую кнопку для продолжения!");
+                    Console.ReadKey();
+                    Console.Clear();
+                }
+                
+            }
+        }
+    }
+}
